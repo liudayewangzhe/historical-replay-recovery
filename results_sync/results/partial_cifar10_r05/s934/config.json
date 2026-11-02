@@ -1,0 +1,46 @@
+{
+  "checkpoint": "results/holdout_cifar10_s934/checkpoint_seed934.pt",
+  "data": "data",
+  "out": "results/partial_cifar10_r05/s934",
+  "rate": 0.5,
+  "delays": [
+    8,
+    16
+  ],
+  "poison_fraction": 0.5,
+  "scale": 1.0,
+  "patch": 4,
+  "methods": [
+    "filter",
+    "rollback",
+    "S2",
+    "S4",
+    "P2",
+    "P4",
+    "V4",
+    "exact"
+  ],
+  "continue_methods": [
+    "filter",
+    "rollback",
+    "S2",
+    "S4",
+    "P2",
+    "P4",
+    "exact"
+  ],
+  "continuation": 16,
+  "eval_every": 2,
+  "threads": 8,
+  "seed": 934,
+  "onset": 75,
+  "dataset": "cifar10",
+  "lr": 0.03,
+  "clients": 50,
+  "malicious": 10,
+  "active_per_round": 25,
+  "checkpoint_test_accuracy": 0.7577999830245972,
+  "torch": "2.8.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "protocol": "oracle identities; per-round uniform participation shared by all branches"
+}

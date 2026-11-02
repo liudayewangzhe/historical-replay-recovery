@@ -1,0 +1,3 @@
+elapsed,stage,seed,threshold,calib_rounds,alarm_offset,delay,flagged,true_positive,false_positive,missed
+80.5,calibration,1778,3.9624147415161133,20,,,,,,
+88.7,detection,1778,3.9624147415161133,,1,2,10,10,0,0

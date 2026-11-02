@@ -1,0 +1,45 @@
+{
+  "checkpoint": "results/holdout_fashionmnist_s1773/checkpoint_seed1773.pt",
+  "data": "data",
+  "out": "results/dr_long_fmnist_s3/s1773",
+  "delays": [
+    16,
+    32
+  ],
+  "poison_fraction": 0.5,
+  "scale": 3.0,
+  "neurotoxin": 0.0,
+  "patch": 4,
+  "methods": [
+    "filter",
+    "rollback",
+    "S4",
+    "P4",
+    "V4",
+    "exact"
+  ],
+  "continue_methods": [
+    "filter",
+    "rollback",
+    "S4",
+    "P4",
+    "V4",
+    "exact"
+  ],
+  "continuation": 64,
+  "eval_every": 8,
+  "replay_seed_offset": 0,
+  "threads": 8,
+  "seed": 1773,
+  "onset": 190,
+  "dataset": "fashionmnist",
+  "lr": 0.1,
+  "clients": 50,
+  "malicious": 10,
+  "local_epochs": 1,
+  "checkpoint_validation_accuracy": 0.8529999852180481,
+  "checkpoint_test_accuracy": 0.8466999530792236,
+  "torch": "2.8.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 4090 D",
+  "protocol": "oracle identities, onset-aligned window; replay schedules coupled with the attacked run"
+}

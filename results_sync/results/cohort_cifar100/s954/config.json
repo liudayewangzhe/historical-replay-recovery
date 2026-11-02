@@ -1,0 +1,45 @@
+{
+  "checkpoint": "results/holdout_cifar100_s954/checkpoint_seed954.pt",
+  "data": "data",
+  "out": "results/cohort_cifar100/s954",
+  "delays": [
+    8,
+    16
+  ],
+  "poison_fraction": 0.5,
+  "scale": 1.0,
+  "neurotoxin": 0.0,
+  "patch": 4,
+  "methods": [
+    "filter",
+    "rollback",
+    "S4",
+    "P4",
+    "FedRecover",
+    "exact"
+  ],
+  "continue_methods": [
+    "filter",
+    "rollback",
+    "S4",
+    "P4",
+    "FedRecover",
+    "exact"
+  ],
+  "continuation": 16,
+  "eval_every": 4,
+  "replay_seed_offset": 0,
+  "threads": 8,
+  "seed": 954,
+  "onset": 55,
+  "dataset": "cifar100",
+  "lr": 0.03,
+  "clients": 50,
+  "malicious": 10,
+  "local_epochs": 1,
+  "checkpoint_validation_accuracy": 0.5121999979019165,
+  "checkpoint_test_accuracy": 0.5152999758720398,
+  "torch": "2.8.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 4090 D",
+  "protocol": "oracle identities, onset-aligned window; replay schedules coupled with the attacked run"
+}

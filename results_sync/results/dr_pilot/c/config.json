@@ -1,0 +1,16 @@
+{
+  "checkpoint": "results/holdout_cifar10_s931/checkpoint_seed931.pt",
+  "data": "data",
+  "out": "results/dr_pilot/c",
+  "attack_rounds": 32,
+  "filter_rounds": 32,
+  "eval_every": 4,
+  "poison_fraction": 0.5,
+  "scale": 3.0,
+  "neurotoxin": 0.05,
+  "patch": 4,
+  "threads": 8,
+  "onset": 70,
+  "seed": 931,
+  "dataset": "cifar10"
+}

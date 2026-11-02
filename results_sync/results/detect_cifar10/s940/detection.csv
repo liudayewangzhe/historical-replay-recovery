@@ -1,0 +1,3 @@
+elapsed,stage,seed,threshold,calib_rounds,alarm,note
+140.7,calibration,940,7.350214958190918,20,,
+257.5,detection,940,,,,no alarm within the window

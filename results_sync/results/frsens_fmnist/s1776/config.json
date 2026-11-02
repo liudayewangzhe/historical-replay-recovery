@@ -1,0 +1,44 @@
+{
+  "checkpoint": "results/holdout_fashionmnist_s1776/checkpoint_seed1776.pt",
+  "data": "data",
+  "out": "results/frsens_fmnist/s1776",
+  "delays": [
+    16,
+    32
+  ],
+  "poison_fraction": 0.5,
+  "scale": 3.0,
+  "neurotoxin": 0.0,
+  "patch": 4,
+  "methods": [
+    "rollback",
+    "FedRecover_w1_p20",
+    "FedRecover_w3_p5",
+    "FedRecover_w2_p1000",
+    "exact"
+  ],
+  "continue_methods": [
+    "FedRecover_w1_p20",
+    "FedRecover_w3_p5",
+    "FedRecover_w2_p1000",
+    "exact"
+  ],
+  "continuation": 16,
+  "eval_every": 2,
+  "replay_seed_offset": 0,
+  "threads": 8,
+  "start_offset": 0,
+  "latency_matched": false,
+  "seed": 1776,
+  "onset": 190,
+  "dataset": "fashionmnist",
+  "lr": 0.1,
+  "clients": 50,
+  "malicious": 10,
+  "local_epochs": 1,
+  "checkpoint_validation_accuracy": 0.8516666293144226,
+  "checkpoint_test_accuracy": 0.8456999659538269,
+  "torch": "2.8.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "protocol": "oracle identities, onset-aligned window; replay schedules coupled with the attacked run"
+}
