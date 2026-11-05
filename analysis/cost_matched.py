@@ -32,9 +32,10 @@ FIG_METHODS = ['filter', 'rollback', 'FT5', 'S4', 'P4', 'FedRecover', 'FedEraser
 TABLE_METHODS = ['filter', 'rollback', 'FT1', 'FT5', 'S4', 'P4', 'FedRecover', 'FedEraser', 'Crab', 'CrabStored',
                  'exact']
 
-plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 6.8,
-                     'xtick.labelsize': 7, 'ytick.labelsize': 7, 'axes.spines.top': False,
-                     'axes.spines.right': False, 'pdf.fonttype': 42})
+plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 7.5,
+                     'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'axes.spines.top': False,
+                     'axes.spines.right': False, 'pdf.fonttype': 42, 'axes.linewidth': .7,
+                     'xtick.major.width': .7, 'ytick.major.width': .7, 'lines.linewidth': 1.2})
 
 
 def load(run, name):
@@ -60,7 +61,9 @@ def storage(method, delay, retained, vector_bytes, rec):
         return 0
     if method in ('rollback', 'exact', 'S4'):
         return vector_bytes
-    if method in ('P4', 'FedRecover'):
+    if method == 'P4':  # retained uploads; the round means follow from them
+        return delay * retained * vector_bytes
+    if method == 'FedRecover':  # uploads plus the stored global models for the displacements
         return (delay * retained + delay) * vector_bytes
     if method == 'FedEraser':
         return int(np.ceil(delay / 2)) * vector_bytes
@@ -84,15 +87,18 @@ ASR_METHODS = ['filter', 'FT5', 'CrabStored', 'rollback', 'exact']
 
 
 def figure():
-    """Accuracy of backdoor-free methods against both clocks; attack success of every kind of method."""
-    fig, axes = plt.subplots(2, 3, figsize=(7.2, 5.0))
+    """Rows: accuracy vs communication rounds, accuracy vs client calls, attack success; columns: datasets."""
+    fig, axes = plt.subplots(3, 2, figsize=(5.4, 7.0))
+    views = [('comm', 'acc', ACC_METHODS, 'Clean accuracy (%)', 'Communication rounds since detection'),
+             ('calls', 'acc', ACC_METHODS, 'Clean accuracy (%)', 'Client calls since detection'),
+             ('comm', 'asr', ASR_METHODS, 'Attack success (%)', 'Communication rounds since detection')]
     seen = {}
-    for row, (run, delay, title, _) in enumerate(CELLS):
+    for col, (run, delay, title, _) in enumerate(CELLS):
         traj = trajectories(run, delay)
         if traj.empty:
             continue
-        for col, (x, y, methods) in enumerate([('comm', 'acc', ACC_METHODS), ('calls', 'acc', ACC_METHODS),
-                                               ('comm', 'asr', ASR_METHODS)]):
+        acc = 100 * traj[traj['method'].isin(ACC_METHODS)].groupby(['method', 'continuation'])['accuracy'].mean()
+        for row, (x, y, methods, ylabel, xlabel) in enumerate(views):
             ax = axes[row][col]
             for method in methods:
                 g = traj[traj['method'] == method]
@@ -105,25 +111,26 @@ def figure():
                 xs = m[x].to_numpy(dtype=float)
                 if x == 'calls':
                     xs = np.maximum(xs, 1)
-                line, = ax.plot(xs, 100 * m[y], color=color, lw=1.1, ls='--' if method == 'exact' else '-',
-                                label=label)
+                line, = ax.plot(xs, 100 * m[y], color=color, ls='--' if method == 'exact' else '-', label=label)
                 ax.plot(xs[:1], 100 * m[y].to_numpy()[:1], marker=marker, color=color, ms=4, ls='none')
                 seen.setdefault(label, line)
+            if x == 'calls':
+                ax.set_xscale('log')
+            if y == 'acc':
+                ax.set_ylim(acc.min() - 1, acc.max() + .5)
             ax.grid(alpha=.25, lw=.5)
-            ax.set_title('abcdef'[3 * row + col], loc='left', fontweight='bold')
-        axes[row][0].set_ylabel(f'{title}\nclean accuracy (%)')
-        axes[row][2].set_ylabel('attack success (%)')
-        axes[row][1].set_xscale('log')
-        acc = 100 * traj[traj['method'].isin(ACC_METHODS)].groupby(['method', 'continuation'])['accuracy'].mean()
-        for ax in axes[row][:2]:
-            ax.set_ylim(acc.min() - 1, acc.max() + .5)
-    for col, xl in enumerate(['Communication rounds since detection', 'Client calls since detection',
-                              'Rounds since detection']):
-        axes[-1][col].set_xlabel(xl)
+            ax.set_xlabel(xlabel)
+            if col == 0:
+                ax.set_ylabel(ylabel)
+            if row == 0:
+                ax.set_title(title)
+            ax.text(-.2 if col == 0 else -.14, 1.03, 'abcdef'[2 * row + col], transform=ax.transAxes,
+                    fontweight='bold', fontsize=9, va='bottom')
     order = [STYLE[m][2] for m in ['rollback', 'S4', 'P4', 'FedRecover', 'FedEraser', 'Crab', 'exact', 'filter',
                                    'FT5', 'CrabStored'] if STYLE[m][2] in seen]
-    fig.legend([seen[k] for k in order], order, frameon=False, ncol=5, loc='lower center')
-    fig.tight_layout(rect=(0, .08, 1, 1))
+    fig.legend([seen[k] for k in order], order, frameon=False, ncol=3, loc='lower center', columnspacing=1.0,
+               handlelength=1.8)
+    fig.tight_layout(rect=(0, .1, 1, 1), h_pad=.9, w_pad=1.0)
     fig.savefig(ROOT / 'manuscript' / 'figures' / 'fig_frontier.pdf')
 
 
@@ -184,32 +191,32 @@ def table():
                              dlat_p=np.nan if dlat is None else sign_flip(dlat.dropna().values)))
     out = pd.DataFrame(rows)
     out.to_csv(ROOT / 'analysis' / 'out' / 'cost_matched_cells.csv', index=False)
-    lines = ['\\begin{table*}[t]', '\\centering',
+    short = {'filter': 'Filter', 'rollback': 'Rollback', 'FT1': 'Fine-tuning, 1 ep.', 'FT5': 'Fine-tuning, 5 ep.',
+             'S4': 'Sampled $s{=}4$', 'P4': 'Paired $s{=}4$', 'FedRecover': 'FedRecover-style',
+             'FedEraser': 'FedEraser-style', 'Crab': 'Crab-style', 'CrabStored': 'Crab-style, stored',
+             'exact': 'Exact replay'}
+    signed = lambda v, w: '--' if not np.isfinite(v) else f'{0.0 if abs(v) < .005 else v:+.2f}'.replace('-', '$-$') + f' ({int(w)})'
+    lines = ['\\begin{table}[!htbp]', '\\centering',
              '\\caption{Cost-matched study (means over nine held-out seeds). Calls and serial rounds are spent during '
-             'recovery; storage is the history the method reads. Accuracy (Acc.) and attack success (ASR) are given at the '
-             'recovery step and after 16 honest rounds. $\\Delta$ is the paired difference from exact replay after 16 '
-             'honest rounds (pp, seeds with a positive difference in parentheses); $\\Delta_{\\mathrm{rb}}$ is the paired '
-             'difference from rollback-and-continue at the same number of communication rounds since detection (serial '
-             'recovery rounds plus 16; methods without recovery rounds are taken at the exact-replay round count).}',
-             '\\label{tab:baselines}', '\\resizebox{\\textwidth}{!}{%', '\\begin{tabular}{llrrrrrrrrr}', '\\toprule',
-             ' & & & & & \\multicolumn{2}{c}{Recovery step} & \\multicolumn{2}{c}{After 16 rounds} & & \\\\',
-             '\\cmidrule(lr){6-7}\\cmidrule(lr){8-9}',
-             'Cell & Method & Calls & Serial & Storage & Acc. & ASR & Acc. & ASR & $\\Delta$ & $\\Delta_{\\mathrm{rb}}$\\\\',
-             '\\midrule']
+             'recovery, and storage is the history the method reads. Accuracy (Acc.) and attack success (ASR, both in \\%) '
+             'are given at the recovery step and after 16 honest rounds. $\\Delta$ is the paired difference from exact '
+             'replay after 16 honest rounds and $\\Delta_{\\mathrm{rb}}$ the paired difference from rollback-and-continue '
+             'at the same number of communication rounds since detection (pp; seeds with a positive difference in '
+             'parentheses). Methods without recovery rounds are compared at the round count of exact replay; -- marks '
+             'comparisons beyond the observed rollback trajectory.}',
+             '\\label{tab:baselines}', '\\scriptsize\\setlength{\\tabcolsep}{3.5pt}',
+             '\\begin{tabular}{lrrrrrrrrr}', '\\toprule',
+             ' & & & & \\multicolumn{2}{c}{Recovery step} & \\multicolumn{2}{c}{After 16 rounds} & & \\\\',
+             '\\cmidrule(lr){5-6}\\cmidrule(lr){7-8}',
+             'Method & Calls & Serial & Storage & Acc. & ASR & Acc. & ASR & $\\Delta$ & $\\Delta_{\\mathrm{rb}}$\\\\']
+    labels = {(r, d): f'{l}, $\\Delta={d}$' for r, d, l, _ in TABLE_CELLS}
     for (run, delay), g in out.groupby(['run', 'delay'], sort=False):
-        label = dict((r, l) for r, _, l, _ in TABLE_CELLS)[run]
-        first = True
+        lines += ['\\midrule', f'\\multicolumn{{10}}{{l}}{{\\textit{{{labels[(run, delay)]}}}}}\\\\']
         for r in g.itertuples():
-            cell = f'{label}, $\\Delta={delay}$' if first else ''
-            first = False
-            d = '--' if not np.isfinite(r.d16) else f'{r.d16:+.2f} ({int(r.d16_wins)})'
-            dl = '--' if not np.isfinite(r.drb) else f'{r.drb:+.2f} ({int(r.drb_wins)})'
-            lines.append(' & '.join([cell, STYLE[r.method][2], f'{r.calls:.0f}', f'{r.serial:.1f}'.rstrip('0').rstrip('.'),
+            lines.append(' & '.join([short[r.method], f'{r.calls:.0f}', f'{r.serial:.1f}'.rstrip('0').rstrip('.'),
                                      human(r.storage), f'{r.acc_rec:.1f}', f'{r.asr_rec:.1f}', f'{r.acc16:.1f}',
-                                     f'{r.asr16:.1f}', d, dl]) + '\\\\')
-        lines.append('\\midrule')
-    lines[-1] = '\\bottomrule'
-    lines += ['\\end{tabular}}', '\\end{table*}']
+                                     f'{r.asr16:.1f}', signed(r.d16, r.d16_wins), signed(r.drb, r.drb_wins)]) + '\\\\')
+    lines += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
     (ROOT / 'manuscript' / 'sections' / 'table_baselines.tex').write_text('\n'.join(lines) + '\n', encoding='utf-8')
     pd.set_option('display.width', 220)
     print(out.round(2).to_string())

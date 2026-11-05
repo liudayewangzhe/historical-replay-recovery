@@ -20,9 +20,10 @@ LABEL = {'filter': 'Filter', 'rollback': 'Rollback', 'S4': 'Sampled ($s{=}4$)',
          'P4': 'Paired ($s{=}4$)', 'exact': 'Exact replay'}
 CELLS = [('dr_main_cifar_a', 16, 'CIFAR-10, delay 16'), ('dr_main_fmnist_s3', 32, 'Fashion-MNIST, delay 32')]
 
-plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 7,
-                     'xtick.labelsize': 7, 'ytick.labelsize': 7, 'axes.spines.top': False,
-                     'axes.spines.right': False, 'pdf.fonttype': 42})
+plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 7.5,
+                     'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'axes.spines.top': False,
+                     'axes.spines.right': False, 'pdf.fonttype': 42, 'axes.linewidth': .7,
+                     'xtick.major.width': .7, 'ytick.major.width': .7, 'lines.linewidth': 1.3})
 
 
 def load(run, name):
@@ -32,7 +33,7 @@ def load(run, name):
 
 
 def trajectories():
-    fig, axes = plt.subplots(3, 2, figsize=(7.0, 5.6), sharex='col')
+    fig, axes = plt.subplots(3, 2, figsize=(5.4, 5.8), sharex='col')
     rows = [('asr', 'Attack success (%)'), ('accuracy', 'Clean accuracy (%)'),
             ('disagreement', 'Disagreement with\nexact replay (%)')]
     for col, (run, delay, title) in enumerate(CELLS):
@@ -61,12 +62,14 @@ def trajectories():
                 ax.minorticks_off()
             if row == 0:
                 ax.set_title(title)
+            ax.text(-.2 if col == 0 else -.16, 1.02, 'abcdef'[2 * row + col], transform=ax.transAxes,
+                    fontweight='bold', fontsize=9, va='bottom')
             if row == len(rows) - 1:
                 ax.set_xlabel('Honest rounds after detection')
             ax.grid(alpha=.25, lw=.5)
     handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, frameon=False, ncol=5, loc='lower center')
-    fig.tight_layout(rect=(0, .04, 1, 1))
+    fig.legend(handles, labels, frameon=False, ncol=3, loc='lower center', columnspacing=1.2)
+    fig.tight_layout(rect=(0, .07, 1, 1), h_pad=.8, w_pad=1.2)
     fig.savefig(OUT / 'fig_trajectories.pdf')
     plt.close(fig)
 

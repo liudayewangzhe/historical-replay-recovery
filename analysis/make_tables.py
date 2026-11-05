@@ -66,7 +66,7 @@ def continuation_table(run, delay, final, paired_exact):
         if method == 'exact':
             d, p = '--', '--'
         else:
-            d = f"{100 * pe.loc[method, 'mean_diff']:+.2f}" if method in pe.index else '--'
+            d = f"{0.0 if abs(100 * pe.loc[method, 'mean_diff']) < .005 else 100 * pe.loc[method, 'mean_diff']:+.2f}".replace('-', '$-$') if method in pe.index else '--'
             p = f"{pe.loc[method, 'p_two_sided']:.3f}" if method in pe.index else '--'
         lines.append(f"{METHOD_LABEL[method]} & {pm(r['acc_mean'], r['acc_sd'])} & {d} & "
                      f"{pm(r['asr_mean'], r['asr_sd'])} & {p}\\\\")

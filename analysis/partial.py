@@ -61,20 +61,23 @@ def main():
     out.to_csv(ROOT / 'analysis' / 'out' / 'partial_cells.csv', index=False)
     if out.empty:
         return
-    f = lambda r, k: '--' if k not in r or not np.isfinite(r[k]) else f"{r[k]:+.2f} ({int(r[k + '_wins'])}/{int(r['n'])})"
-    lines = ['\\begin{table}[t]', '\\centering',
-             '\\caption{Partial participation on CIFAR-10 (a fraction $q$ of the 50 clients is active in each round). '
-             'Filter and exact ASR after 16 honest rounds, exact-replay client calls during recovery, and paired '
-             'differences (pp; seeds with a positive difference) after 16 honest rounds unless marked as recovery step.}',
-             '\\label{tab:partial}', '\\resizebox{\\textwidth}{!}{%', '\\begin{tabular}{rrrrrrrrrrrr}', '\\toprule',
-             '$q$ & $\\Delta$ & $n$ & Filter ASR & Exact ASR & Exact calls & Rollback $-$ exact & S4 $-$ exact & '
-             'S2 $-$ exact & P4 $-$ S4 (recovery) & P4 $-$ S4 & P2 $-$ S2\\\\', '\\midrule']
+    f = lambda r, k: '--' if k not in r or not np.isfinite(r[k]) else \
+        f"{0.0 if abs(r[k]) < .005 else r[k]:+.2f}".replace('-', '$-$') + f" ({int(r[k + '_wins'])})"
+    lines = ['\\begin{table}[!htbp]', '\\centering',
+             '\\caption{Partial participation on CIFAR-10 (a fraction $q$ of the 50 clients is active in each round; '
+             'nine held-out seeds per cell). Filter ASR after 16 honest rounds, client calls of exact replay during '
+             'recovery, and paired differences in pp (seeds with a positive difference in parentheses), after 16 honest '
+             'rounds unless marked as recovery step.}',
+             '\\label{tab:partial}', '\\scriptsize\\setlength{\\tabcolsep}{3.5pt}',
+             '\\begin{tabular}{rrrrrrrrr}', '\\toprule',
+             ' & & Filter & Exact & Rollback & S2 & \\multicolumn{2}{c}{P4 $-$ S4} & P2 $-$ S2\\\\',
+             '\\cmidrule(lr){7-8}',
+             '$q$ & $\\Delta$ & ASR (\\%) & calls & $-$ exact & $-$ exact & recovery & after 16 & after 16\\\\', '\\midrule']
     for _, r in out.iterrows():
-        lines.append(' & '.join([f"{r['rate']:.1f}", f"{int(r['delay'])}", f"{int(r['n'])}", f"{r['filter_asr']:.1f}",
-                                 f"{r['exact_asr']:.1f}", f"{r['exact_calls']:.0f}", f(r, 'rollback-exact_cont'),
-                                 f(r, 'S4-exact_cont'), f(r, 'S2-exact_cont'), f(r, 'P4-S4_rec'), f(r, 'P4-S4_cont'),
-                                 f(r, 'P2-S2_cont')]) + '\\\\')
-    lines += ['\\bottomrule', '\\end{tabular}}', '\\end{table}']
+        lines.append(' & '.join([f"{r['rate']:.1f}", f"{int(r['delay'])}", f"{r['filter_asr']:.1f}",
+                                 f"{r['exact_calls']:.0f}", f(r, 'rollback-exact_cont'), f(r, 'S2-exact_cont'),
+                                 f(r, 'P4-S4_rec'), f(r, 'P4-S4_cont'), f(r, 'P2-S2_cont')]) + '\\\\')
+    lines += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
     (ROOT / 'manuscript' / 'sections' / 'table_partial.tex').write_text('\n'.join(lines) + '\n', encoding='utf-8')
     pd.set_option('display.width', 220)
     print(out.round(2).T.to_string())

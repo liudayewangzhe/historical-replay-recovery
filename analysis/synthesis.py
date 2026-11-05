@@ -34,9 +34,10 @@ FAMILY = {'CIFAR-10': ('#0072B2', 'o'), 'CIFAR-10 (replication)': ('#56B4E9', 's
           'Fashion-MNIST, Dir(0.1)': ('#E69F00', 'v'), 'Fashion-MNIST, Neurotoxin-style': ('#009E73', 'P')}
 CONTINUATION = 16
 
-plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 6.5,
-                     'xtick.labelsize': 7, 'ytick.labelsize': 7, 'axes.spines.top': False,
-                     'axes.spines.right': False, 'pdf.fonttype': 42})
+plt.rcParams.update({'font.size': 8, 'axes.titlesize': 8, 'axes.labelsize': 8, 'legend.fontsize': 7.5,
+                     'xtick.labelsize': 7.5, 'ytick.labelsize': 7.5, 'axes.spines.top': False,
+                     'axes.spines.right': False, 'pdf.fonttype': 42, 'axes.linewidth': .7,
+                     'xtick.major.width': .7, 'ytick.major.width': .7, 'lines.linewidth': 1.3})
 
 
 def load(run, name):
@@ -90,7 +91,7 @@ def cell_table(seeds):
 
 
 def figure(seeds, cells):
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.5), gridspec_kw=dict(width_ratios=[1, 1.15]))
+    fig, axes = plt.subplots(2, 1, figsize=(5.4, 6.6), gridspec_kw=dict(height_ratios=[1, 1.25]))
     ax = axes[0]
     # Rollback and exact replay never read the attacked history, so the Neurotoxin-style cohort
     # (same checkpoints as the main Fashion-MNIST cohort) duplicates those points; it is omitted here.
@@ -111,8 +112,8 @@ def figure(seeds, cells):
             rotation=-38, rotation_mode='anchor')
     ax.set_xlabel('Honest progress inside the window (pp)\nexact replay minus onset checkpoint')
     ax.set_ylabel('Rollback minus exact after\n16 honest rounds (pp)')
-    ax.set_title('a  Rollback forfeits window progress', loc='left')
-    handles, names = ax.get_legend_handles_labels()
+    ax.set_title('a   Rollback forfeits the window\'s progress', loc='left', fontweight='bold')
+    ax.legend(frameon=False, loc='lower left', ncol=2, handletextpad=.3, columnspacing=1.0)
     ax.grid(alpha=.25, lw=.5)
 
     ax = axes[1]
@@ -124,14 +125,12 @@ def figure(seeds, cells):
                 mfc='white', color='#D55E00', elinewidth=.9, capsize=1.5, label='After 16 honest rounds')
     ax.axvline(0, color='0.4', lw=.6)
     ax.set_yticks(ypos)
-    ax.set_yticklabels(labels, fontsize=6.3)
+    ax.set_yticklabels(labels, fontsize=7.5)
     ax.set_xlabel('Paired minus direct sampling, $s{=}4$ (pp)\nmean and 95% CI over seeds')
-    ax.set_title('b  The history advantage is transient', loc='left')
+    ax.set_title('b   The history advantage is transient', loc='left', fontweight='bold')
     ax.legend(frameon=False, loc='upper right')
     ax.grid(alpha=.25, lw=.5, axis='x')
-    fig.legend(handles, names, frameon=False, loc='lower left', bbox_to_anchor=(.01, 0), ncol=3,
-               handletextpad=.2, columnspacing=.8)
-    fig.tight_layout(w_pad=1.0, rect=(0, .1, 1, 1))
+    fig.tight_layout(h_pad=1.5)
     fig.savefig(ROOT / 'manuscript' / 'figures' / 'fig_synthesis.pdf')
     return slope
 
